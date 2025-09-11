@@ -16,14 +16,14 @@ This approach is much faster and mixes much better.
 
 I consider three versions of this model.
 
-Version 1: Hardcore point process. Points within a radius r of another, younger point are thinned with probability 1. We then estimate r.
+Version 1: Hardcore point process. Points within a radius r of another, older point are thinned with probability 1. We then estimate r.
 
-Version 2: Softcore point process where points within a radius r of another, younger point are thinned with probability p.thin between 0 and 1. 
+Version 2: Softcore point process where points within a radius r of another, older point are thinned with probability p.thin between 0 and 1. 
 We estimate both r and p.thin. This version often leads to a multimodal posterior and can take a long time for r to converge, at least if p.thin is low.
 Specifically, r can get stuck at low values and may take a long time to eventually converge upwards. Perhaps a better initialization method may help, or smarter
 priors for r. Should run multiple chains to see if they converge to the same place.
 
-Version 3: Softcore point process where younger points are thinned by a halfnormal thinning kernel with scale sigma.thin. I also include the thinning
+Version 3: Softcore point process where older points are thinned by a halfnormal thinning kernel with scale sigma.thin. I also include the thinning
 radius r, but assume r is in the tail of the thinning kernel and is not estimated. It is used to speed up likelihood calculations. You can estimate it
 in principle, but there can be major multimodality issues.
 

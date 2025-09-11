@@ -164,7 +164,7 @@ nt2 <- 5
 
 #Build the model, configure the mcmc, and compile
 start.time <- Sys.time()
-deregisterDistributions("dThin") #putting this here in case you switch model version without restarting
+# deregisterDistributions("dThin") #if you switch model version without restarting, deregister dThin
 Rmodel <- nimbleModel(code=NimModel, constants=constants, data=Nimdata,check=FALSE,inits=Niminits)
 #if not using density covariate
 # config.nodes <- c("D0","sigma.thin",paste("age[",1:data$N.secondary,"]")) #only need to supply updates for 1:N.secondary ages
