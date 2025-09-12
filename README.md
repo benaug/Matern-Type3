@@ -8,7 +8,7 @@ Adams, Ryan Prescott. Kernel methods for nonparametric Bayesian inference of pro
 
 Rao, Vinayak, Ryan P. Adams, and David D. Dunson. "Bayesian inference for Matérn repulsive processes." Journal of the Royal Statistical Society Series B: Statistical Methodology 79.3 (2017): 877-897.
 
-Generally, a Matérn Type III process is simulated by simulating a primary point pattern, e.g., a homogenous or inhomogenous point process, simulating a uniform(0,1) age for each point,
+Generally, a Matérn Type III process is simulated by simulating a primary point pattern, e.g., a homogenous or inhomogenous Poisson process, simulating a uniform(0,1) age for each point,
 sorting the points by age, and applying a thinning process to obtain the secondary points which are observed.
 
 I use the result from Rao et al. showing the thinned points can be deleted and resimulated on each iteration instead of using a birth-death process. 
