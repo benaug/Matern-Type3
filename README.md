@@ -5,9 +5,11 @@ This repository contains generalized Matérn Type III repulsive point process mo
 pages 36-42 of Adams 2009 for a good introduction of Matérn repulsive point processes.
 
 Adams, Ryan Prescott. Kernel methods for nonparametric Bayesian inference of probability densities and point processes. Diss. University of Cambridge, 2009.
+
 https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://lips.cs.princeton.edu/pdfs/adams2009thesis.pdf&ved=2ahUKEwiI2ry7p9OPAxWpkYkEHZTALgkQFnoECB0QAQ&usg=AOvVaw3kMkNtyqmprpqYusVrSYqv
 
 Rao, Vinayak, Ryan P. Adams, and David D. Dunson. "Bayesian inference for Matérn repulsive processes." Journal of the Royal Statistical Society Series B: Statistical Methodology 79.3 (2017): 877-897.
+
 https://academic.oup.com/jrsssb/article/79/3/877/7040709
 
 Generally, a Matérn Type III process is simulated by simulating a primary point pattern, e.g., a homogenous or inhomogenous Poisson process, simulating a uniform(0,1) age for each point,
