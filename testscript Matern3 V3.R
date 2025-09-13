@@ -1,6 +1,6 @@
 #Softcore point process with probabilistic exclusion within radius r following halfnormal thinning kernel
 #Here, I am not actually estimating r, but setting it to some large value beyond which the probability of 
-#thinning from the thinning kernel is 0. Basically used to trim likelihood calculations
+#thinning from the thinning kernel is effectively 0. Basically used to trim likelihood calculations
 #can try to estimate it, but multimodality/identifiability can be very bad.
 
 library(nimble)

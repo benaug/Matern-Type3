@@ -138,7 +138,7 @@ image(data$x.vals,data$y.vals,matrix(data$InSS,data$n.cells.x,data$n.cells.y))
 points(s.init,pch=16)
 
 D0.init <- sum(z.init)/(sum(data$InSS)*data$res^2)
-Niminits <- list(N=sum(z.init),D0=D0.init,z=z.init,r=0.1, #initialize r very low so starting logProb is finite
+Niminits <- list(N.primary=sum(z.init),D0=D0.init,z=z.init,r=0.1, #initialize r very low so starting logProb is finite
                  D.beta1=0,s=s.init,s.cell=s.cell.init,age=age.init)
 
 #constants for Nimble
