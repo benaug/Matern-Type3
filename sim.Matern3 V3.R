@@ -4,7 +4,7 @@ e2dist <-  function (x, y){
   matrix(dvec, nrow = nrow(x), ncol = nrow(y), byrow = F)
 }
 
-sim.Matern3V2 <-
+sim.Matern3V3 <-
   function(D.beta0=NA,D.beta1=NA,D.cov=NA,InSS=NA,r=NA,sigma.thin=NA,xlim=NA,ylim=NA,res=NA){
     #get expected number of primary points
     cellArea <- res^2

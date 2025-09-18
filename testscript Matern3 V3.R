@@ -74,7 +74,7 @@ image(x.vals,y.vals,matrix(lambda.cell,n.cells.x,n.cells.y),main="Expected Densi
 
 #Simulate some data
 set.seed(19)
-data <- sim.Matern3V2(D.beta0=D.beta0,D.beta1=D.beta1,D.cov=D.cov,InSS=InSS,
+data <- sim.Matern3V3(D.beta0=D.beta0,D.beta1=D.beta1,D.cov=D.cov,InSS=InSS,
                      r=r,sigma.thin=sigma.thin,xlim=xlim,ylim=ylim,res=res)
 data$N.primary
 mean(data$truth$retain) #percent of points retained
