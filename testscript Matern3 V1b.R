@@ -207,8 +207,8 @@ image(x.vals,y.vals,matrix(Cmodel$lambda.cell,n.cells.x,n.cells.y),main="True Da
 points(data$truth$s,pch=16)
 points(data$truth$s[data$truth$retain==1,],pch=16,col="darkred")
 image(x.vals,y.vals,matrix(Cmodel$lambda.cell,n.cells.x,n.cells.y),main="Current Iteration",col=cols1)
-points(Cmodel$s[Cmodel$z==1,],pch=16)
-points(Cmodel$s[1:data$N.secondary,],pch=16,col="darkred")
+points(Cmodel$s2[1:data$N.secondary,],pch=16)
+points(Cmodel$s1,pch=16,col="darkred")
 
 
 #posterior correlation
