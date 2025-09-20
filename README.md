@@ -31,5 +31,7 @@ priors that constrain r to reasonable values for the data set. Should run multip
 Version 3: Softcore point process where older points are thinned by a halfnormal thinning kernel with scale parameter sigma.thin. I also include the thinning
 radius r, but assume r is in the tail of the thinning kernel and is not estimated. It is used to speed up likelihood calculations. You can also estimate it, but there can be major multimodality issues.
 
+Further, I consider 2 ways to structure the models. "b" versions are more efficient than original versions (roughly 2x as fast).
+
 This seems like a good base model to use for spatial capture recapture. But I expect you will need extraordinary data sets with many traps and higher densities
 so that many activity centers are localized accurately.

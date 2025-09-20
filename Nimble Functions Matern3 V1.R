@@ -68,26 +68,22 @@ dThin <- nimbleFunction(
     returnType(double(0))
     M <- nimDim(D)[1]
     logProb <- 0
-    these.points <- rep(0,M)
     for(i in 1:M){
       if(z[i]==1){
         n.points <- 0
         for(j in 1:M){
           if(D[i,j]<r&x[j]==1&age[j]<age[i]){ #only previously retained points cast a shadow
             n.points <- n.points + 1
-            these.points[n.points] <- j
           }
         }
         if(n.points>0){
           if(x[i]==1){
-            logProb <- logProb - Inf
-          }else{
-            logProb <- logProb + 0
-          }
+            logProb <- - Inf
+          }#else valid
         }else{
           if(x[i]==0){ #must be retained if z[i]==1 and n.points=0
             logProb <- -Inf
-          }
+          }#else valid
         }
       }
     }

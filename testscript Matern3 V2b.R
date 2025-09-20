@@ -1,10 +1,10 @@
-#Hardcore point process with deterministic exclusion within radius r
+#Softcore point process with probabilistic exclusion within radius r
 
 library(nimble)
 library(coda)
-source("sim.Matern3 V1.R")
-source("NimModel Matern3 V1.R")
-source("Nimble Functions Matern3 V1.R")
+source("sim.Matern3 V2.R")
+source("NimModel Matern3 V2b.R")
+source("Nimble Functions Matern3 V2b.R")
 source("mask.check.R")
 
 #If using Nimble version 0.13.1 and you must run this line 
@@ -17,13 +17,15 @@ library(RColorBrewer)
 cols1 <- brewer.pal(9,"Greens")
 
 #simulate some data
-r <- 1 #interaction radius
+r <- 1 #thinning radius
+p.thin <- 0.75 #thinning probability inside thinning radius. 
+#The lower this is, the more likely you will get multimodal posteriors and/or convergence issues
 
 ### Habitat Covariate stuff###
-#state space demensions
+#get x and y extent by buffering state space
 xlim <- c(0,15)
 ylim <- c(0,15)
-#if state space lower left corner is not(0,0), shift X, xlim, ylim, so lower left corner of state space is (0,0)
+#shift X, xlim, ylim, so lower left side of state space is (0,0)
 #this is required to use efficient look-up table to find the cell number
 #of a continuous location
 x.shift <- xlim[1]
@@ -66,9 +68,9 @@ sum(lambda.cell) #expected N in state space
 image(x.vals,y.vals,matrix(lambda.cell,n.cells.x,n.cells.y),main="Expected Density",col=cols1)
 
 #Simulate some data
-set.seed(191)
-data <- sim.Matern3V1(D.beta0=D.beta0,D.beta1=D.beta1,D.cov=D.cov,InSS=InSS,
-                     r=r,xlim=xlim,ylim=ylim,res=res)
+set.seed(2133)
+data <- sim.Matern3V3(D.beta0=D.beta0,D.beta1=D.beta1,D.cov=D.cov,InSS=InSS,
+                     r=r,p.thin=p.thin,xlim=xlim,ylim=ylim,res=res)
 data$N.primary
 mean(data$truth$retain) #percent of points retained
 
@@ -96,67 +98,61 @@ M <- 600 #data augmentation level
 N.secondary <- data$N.secondary
 xlim <- data$xlim
 ylim <- data$ylim
-s.init <- matrix(NA,nrow=M,ncol=2)
-s.cell.init <- sample(1:data$n.cells,M,replace=TRUE)
-for(i in 1:M){
-  tmp <- which(data$cells==s.cell.init[i],arr.ind=TRUE) #x and y number
-  s.init[i,1] <- runif(1,data$x.vals[tmp[1]]-data$res/2,data$x.vals[tmp[1]+data$res/2])
-  s.init[i,2] <- runif(1,data$y.vals[tmp[2]]-data$res/2,data$y.vals[tmp[2]+data$res/2])
-}
-#these are observed
+#primary points are observed
+s1 <- data$s.obs
+s1.cell <- rep(0,N.secondary)
 for(i in 1:N.secondary){
-  s.init[i,] <- data$s.obs[i,]
-  s.cell.init[i] <- getCell(s=s.init[i,],res=data$res,cells=data$cells,xlim=data$xlim,ylim=data$ylim)
+  s1.cell[i] <- getCell(s=s1[i,],res=data$res,cells=data$cells,xlim=data$xlim,ylim=data$ylim)
 }
-
-#format data/inits
-retain <- rep(0,M) #retain is 1 if retained, 0 if thinned. Must put 1:N.secondary points at top
-retain[1:N.secondary] <- 1
-#initialize z=1 for primary points only. Hard to get finite starting logProb otherwise
-z.init <- retain
-age.init <- 1:M/(M+1)
-
+age1.init <- 1:N.secondary/(N.secondary+M+1)
+#thinned points
+s2.init <- matrix(NA,nrow=M,ncol=2)
+s2.cell.init <- sample(1:data$n.cells,M,replace=TRUE)
+for(i in 1:M){
+  tmp <- which(data$cells==s2.cell.init[i],arr.ind=TRUE) #x and y number
+  s2.init[i,1] <- runif(1,data$x.vals[tmp[1]]-data$res/2,data$x.vals[tmp[1]+data$res/2])
+  s2.init[i,2] <- runif(1,data$y.vals[tmp[2]]-data$res/2,data$y.vals[tmp[2]+data$res/2])
+}
 #If using a habitat mask, move any s's initialized in non-habitat above to closest habitat
 e2dist  <-  function (x, y){
   i <- sort(rep(1:nrow(y), nrow(x)))
   dvec <- sqrt((x[, 1] - y[i, 1])^2 + (x[, 2] - y[i, 2])^2)
   matrix(dvec, nrow = nrow(x), ncol = nrow(y), byrow = F)
 }
-alldists <- e2dist(s.init,data$dSS)
+alldists <- e2dist(s2.init,data$dSS)
 alldists[,data$InSS==0] <- Inf
 for(i in 1:M){
-  this.cell <- data$cells[trunc(s.init[i,1]/data$res)+1,trunc(s.init[i,2]/data$res)+1]
+  this.cell <- data$cells[trunc(s2.init[i,1]/data$res)+1,trunc(s2.init[i,2]/data$res)+1]
   if(data$InSS[this.cell]==0){
     cands <- alldists[i,]
     new.cell <- which(alldists[i,]==min(alldists[i,]))
-    s.init[i,] <- data$dSS[new.cell,]
+    s2.init[i,] <- data$dSS[new.cell,]
   }
 }
 
 #plot to make sure initialized activity centers are inside habitat mask
 image(data$x.vals,data$y.vals,matrix(data$InSS,data$n.cells.x,data$n.cells.y))
-points(s.init,pch=16)
+points(s2.init,pch=16)
 
-#initialize r as large as possible
-D <- getD(s.init[1:N.secondary,],z=z.init[1:N.secondary])
-diag(D) <- Inf
-r.init <- min(D) -0.00001
-if(r.init<=0)warning("r.init not valid, look at s1.inits")
+age2.init <- (N.secondary+1):(M+N.secondary)/(N.secondary+M+1)
 
-D0.init <- sum(z.init)/(sum(data$InSS)*data$res^2)
-Niminits <- list(N.primary=sum(z.init),D0=D0.init,z=z.init,r=r.init,
-                 D.beta1=0,s=s.init,s.cell=s.cell.init,age=age.init)
+D0.init <- N.secondary/(sum(data$InSS)*data$res^2)
+Niminits <- list(N.primary=N.secondary,N.thin=0,D0=D0.init,p.thin=0.5,r=data$r,
+                 D.beta1=0,s2=s2.init,s2.cell=s2.cell.init,age1=age1.init,age2=age2.init)
 
 #constants for Nimble
 constants <- list(M=M,D.cov=data$D.cov,cellArea=data$cellArea,n.cells=data$n.cells,
-                  xlim=data$xlim,ylim=data$ylim,res=data$res)
+                  xlim=data$xlim,ylim=data$ylim,res=data$res,N.secondary=N.secondary)
 
 #supply data to nimble
-dummy.data <- rep(1,data$n.cells)
-Nimdata <- list(retain=retain,InSS=data$InSS,cells=data$cells,dummy.data=dummy.data)
+dummy.data1 <- rep(1,N.secondary)
+dummy.data2 <- rep(1,M)
+dummy.data3 <- rep(1,N.secondary)
+Nimdata <- list(s1=s1,s1.cell=s1.cell,InSS=data$InSS,cells=data$cells
+                ,dummy.data1=dummy.data1,dummy.data2=dummy.data2,dummy.data3=dummy.data3)
 
 # set parameters to monitor
-parameters <- c('D0',"D.beta1","lambda","N.primary","r")
+parameters <- c('D0',"D.beta1","lambda","N.primary","p.thin","r")
 nt <- 1 #thinning rate
 parameters2 <- c("lambda.cell",'D0') #record D0 here for plotting
 nt2 <- 5
@@ -166,18 +162,17 @@ start.time <- Sys.time()
 # deregisterDistributions("dThin") #if you switch model version without restarting, deregister dThin
 Rmodel <- nimbleModel(code=NimModel, constants=constants, data=Nimdata,check=FALSE,inits=Niminits)
 #if not using density covariate
-# config.nodes <- c("D0","r",paste("age[",1:data$n,"]")) #only need to supply updates for 1:N.secondary ages
 #if using density covariate, use this and add block sampler for D0 and D.beta1 below
-config.nodes <- c("r",paste("age[",1:data$N.secondary,"]")) #only need to supply updates for 1:N.secondary ages
+config.nodes <- c("r","p.thin","age1")
 conf <- configureMCMC(Rmodel,monitors=parameters, thin=nt,
                       monitors2=parameters2, thin2=nt2,
                       useConjugacy = FALSE, nodes=config.nodes) 
 
-conf$addSampler(target = paste("s[1:",M,",1:2]"),
+conf$addSampler(target = paste("s2[1:",M,",1:2]"),
                 type = 'thinnedSampler',control = list(M=M,N.secondary=data$N.secondary,n.cells.x=data$n.cells.x,n.cells.y=data$n.cells.y,
                                                        res=data$res),
                 silent = TRUE)
-    
+
 conf$addSampler(target = c("D0","D.beta1"),
                 type = 'AF_slice',control=list(adaptive=TRUE),silent = TRUE)
 
@@ -200,6 +195,7 @@ plot(mcmc(mvSamples[500:nrow(mvSamples),]))
 #some targets
 data$N.primary
 r
+p.thin
 
 #compare simulated data to final iteration
 par(mfrow=c(2,1),ask=FALSE)
