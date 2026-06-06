@@ -29,8 +29,8 @@ sim.Matern3V1 <-
     s <- matrix(NA,nrow=N.primary,ncol=2)
     for(i in 1:N.primary){
       tmp <- which(cells==s.cell[i],arr.ind=TRUE) #x and y number
-      s[i,1] <- runif(1,x.vals[tmp[1]]-res/2,x.vals[tmp[1]+res/2])
-      s[i,2] <- runif(1,y.vals[tmp[2]]-res/2,y.vals[tmp[2]+res/2])
+      s[i,1] <- runif(1,x.vals[tmp[1]]-res/2,x.vals[tmp[1]]+res/2)
+      s[i,2] <- runif(1,y.vals[tmp[2]]-res/2,y.vals[tmp[2]]+res/2)
     }
     
     #Matern3 thinning process
